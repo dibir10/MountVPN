@@ -3,3 +3,4 @@
 __pycache__/
 *.rdb
 .DS_Store
+/volumes

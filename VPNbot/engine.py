@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker,AsyncSession
 
-from config import settings
-from models import Base
+from VPNbot.config import settings
+from VPNbot.models import Base
 
 engine = create_async_engine(url=settings.DATABASE_URL_asyncpg, echo=True)
 

@@ -2,12 +2,12 @@ from aiogram import Bot, Dispatcher
 import asyncio
 
 # import asyncpg, aiosqlite
-from engine import create_db, drop_db
-from handlers import handlers_router
-from config import settings
-from main_menu import set_main_menu
-from middlewares.db import DatabaseSession
-from engine import session_maker
+from VPNbot.engine import create_db, drop_db
+from VPNbot.handlers import handlers_router
+from VPNbot.config import settings
+from VPNbot.main_menu import set_main_menu
+from VPNbot.middlewares.db import DatabaseSession
+from VPNbot.engine import session_maker
 
 
 async def main():

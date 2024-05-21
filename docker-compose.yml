@@ -1,13 +1,18 @@
+version: '3.8'
+
 services:
   database:
     image: postgres
+    container_name: mypostgres
     ports:
       - "5433:5432"
     restart: always
-    environment:
-      POSTGRES_USER: docker
-      POSTGRES_PASSWORD: docker
-      POSTGRES_DB: exampledb
+    env_file:
+      - ./.env
+    volumes:
+      - ./volumes:/var/lib/postgresql/data
+    networks:
+      - app-network
 
   adminer:
     image: adminer
@@ -15,4 +20,22 @@ services:
     depends_on:
       - database
     ports:
-      - 8080:8080
+      - "8080:8080"
+    networks:
+      - app-network
+
+  bot:
+    build: .
+    command: python3 bot.py
+    working_dir: "/usr/src/app"
+    env_file:
+      - ./.env
+    restart: always
+    depends_on:
+      - database
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

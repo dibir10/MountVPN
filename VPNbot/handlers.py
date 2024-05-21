@@ -6,10 +6,10 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 
-from lexicon.lexicon import LEXICON
-from config import settings
-from models import User_table
-from outline import client
+from VPNbot.lexicon.lexicon import LEXICON
+from VPNbot.config import settings
+from VPNbot.models import User_table
+from VPNbot.outline import client
 
 class IsAdmin(BaseFilter):
     def __init__(self, admin_ids: list[int]) -> None:

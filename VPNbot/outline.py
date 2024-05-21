@@ -1,6 +1,6 @@
 from outline_vpn.outline_vpn import OutlineVPN
 
-from config import settings
+from VPNbot.config import settings
 
 OUTLINE_API_URL = settings.API_URL
 
