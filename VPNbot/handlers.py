@@ -78,8 +78,8 @@ async def process_choose_tariff(callback: CallbackQuery):
 @handlers_router.callback_query(F.data == 'price1')
 async def process_price1(callback: CallbackQuery):
     keyboard = create_inline_kb(1, ready100='Готово!', cancel='Отмена.')
-    await callback.message.answer(
-        text='Сделайте перевод на карту 2222 2222 2222 2222 сумму в размере 100 руб.\n'
+    await callback.message.answer( 
+        text='Сделайте перевод на карту 2200 7001 6143 8105 сумму в размере 100 руб.\n'
              'Прикрепите скрин чека и нажмите "Готово!"',
         reply_markup=keyboard
     )
@@ -89,7 +89,7 @@ async def process_price1(callback: CallbackQuery):
 async def process_price2(callback: CallbackQuery):
     keyboard = create_inline_kb(1, ready300='Готово!', cancel='Отмена.')
     await callback.message.answer(
-        text='Сделайте перевод на карту 2222 2222 2222 2222 сумму в размере 300 руб.\n'
+        text='Сделайте перевод на карту 2200 7001 6143 8105 сумму в размере 200 руб.\n'
              'Прикрепите скрин чека и нажмите "Готово!"',
         reply_markup=keyboard
     )

@@ -1,5 +1,5 @@
 # Использование официального Python образа версии 3.11
-FROM python:3.11
+FROM python:3.11-alpine
 
 # Установка рабочей директории
 WORKDIR /usr/src/app
