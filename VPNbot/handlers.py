@@ -1,6 +1,7 @@
 from aiogram import Bot, Router, F
-from aiogram.filters import BaseFilter, CommandStart
+from aiogram.filters import BaseFilter, CommandStart, StateFilter
 from aiogram.filters.callback_data import CallbackData
+from aiogram.fsm.state import default_state, State, StatesGroup
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,6 +11,7 @@ from VPNbot.lexicon.lexicon import LEXICON
 from VPNbot.config import settings
 from VPNbot.models import User_table
 from VPNbot.outline import client
+from VPNbot.states import FSMForm, FSMContext, default_state
 
 class IsAdmin(BaseFilter):
     def __init__(self, admin_ids: list[int]) -> None:
@@ -52,7 +54,7 @@ def create_inline_kb(width: int,
 # Этот хэндлер будет срабатывать на команду "/start"
 # и отправлять в чат клавиатуру с инлайн-кнопками
 @handlers_router.message(CommandStart())  # noqa: E999
-async def process_start_command(message: Message):  # noqa: E999
+async def process_start_command(message: Message, state: FSMContext):  # noqa: E999
     keyboard = create_inline_kb(1, 'Подключить VPN')
     await message.answer(
         text=f"Привет, <b>{message.from_user.full_name}</b>.\n\n"
@@ -61,41 +63,48 @@ async def process_start_command(message: Message):  # noqa: E999
         parse_mode='HTML',
         reply_markup=keyboard
     )
+    await state.set_state(default_state)
+
 
 # Этот хэндлер будет срабатывать на апдейт типа CallbackQuery
 # с data 'big_button_1_pressed'
-@handlers_router.callback_query(F.data == 'Подключить VPN')
-async def process_choose_tariff(callback: CallbackQuery):
+@handlers_router.callback_query(F.data == 'Подключить VPN', StateFilter(default_state))
+async def process_choose_tariff(callback: CallbackQuery, state: FSMContext):
     keyboard = create_inline_kb(2, price1='1 месяц - 100 руб.', price2='3 месяца - 200 руб.')
     await callback.message.answer(
         text='Выберите тариф: ',
         reply_markup=keyboard
     )
+    await state.set_state(FSMForm.choose_tariff)
 
 
 # Этот хэндлер будет срабатывать на апдейт типа CallbackQuery
 # с data 'price1'
-@handlers_router.callback_query(F.data == 'price1')
-async def process_price1(callback: CallbackQuery):
+@handlers_router.callback_query(F.data == 'price1', StateFilter(FSMForm.choose_tariff))
+async def process_price1(callback: CallbackQuery, state: FSMContext):
     keyboard = create_inline_kb(1, ready100='Готово!', cancel='Отмена.')
-    await callback.message.answer( 
+    await callback.message.answer(
         text='Сделайте перевод на карту 2200 7001 6143 8105 сумму в размере 100 руб.\n'
              'Прикрепите скрин чека и нажмите "Готово!"',
         reply_markup=keyboard
     )
+    await state.set_state(FSMForm.upload_photo)
+
 # Этот хэндлер будет срабатывать на апдейт типа CallbackQuery
 # с data 'price2'
-@handlers_router.callback_query(F.data == 'price2')
-async def process_price2(callback: CallbackQuery):
-    keyboard = create_inline_kb(1, ready300='Готово!', cancel='Отмена.')
+@handlers_router.callback_query(F.data == 'price2', StateFilter(FSMForm.choose_tariff))
+async def process_price2(callback: CallbackQuery, state: FSMContext):
+    keyboard = create_inline_kb(1, ready200='Готово!', cancel='Отмена.')
     await callback.message.answer(
         text='Сделайте перевод на карту 2200 7001 6143 8105 сумму в размере 200 руб.\n'
              'Прикрепите скрин чека и нажмите "Готово!"',
         reply_markup=keyboard
     )
+    await state.set_state(FSMForm.upload_photo)
+
 
 # этот хендлер принимает фото чека и отправляет его админу
-@handlers_router.message(F.photo)
+@handlers_router.message(F.photo, StateFilter(FSMForm.upload_photo))
 async def send_to_admin(message: Message, bot: Bot):
     button_1 = InlineKeyboardButton(
         text='Оплата подтверждена',
@@ -123,16 +132,18 @@ async def send_to_admin(message: Message, bot: Bot):
 
 
 # Этот хендлер принимает сообщение о подтверждении оплаты от юзера
-@handlers_router.callback_query(F.data.in_({'ready100', 'ready300'}))
+@handlers_router.callback_query(F.data.in_({'ready100', 'ready200'}))
 async def process_confirm_from_user(callback: CallbackQuery):
     await callback.message.answer(text='Админ проверяет оплату и вышлет вам ключ!')
 
 # Этот хендлер принимает сообщеине об отмене от юзера
 @handlers_router.callback_query(F.data == 'cancel')
-async def process_cancel_from_user(callback: CallbackQuery):
+async def process_cancel_from_user(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(text='Отменили ваш счет! Надеюсь на ваше возвращение к нам!'
                                        'Чтобы попробовать заново наберите команду /start.')
     await callback.message.delete()
+    await state.clear()
+
 
 
 # Этот хендлер принимает от админа сообщение о том что оплата не подтверждается
@@ -150,7 +161,7 @@ async def process_confirm_from_admin(callback: CallbackQuery, callback_data: Adm
     access_url = new_key.access_url
     # access_url='какой-то ключ' # временная заглушка для ключа Outline
     await bot.send_message(chat_id=callback_data.user_id, text=F'Вот твой ключ к Outline: \n')
-    await bot.send_message(chat_id=callback_data.user_id, text=F'{access_url}')
+    await bot.send_message(chat_id=callback_data.user_id, text=F'`{access_url}`', parse_mode='MarkdownV2')
 
 
     session.add(User_table(

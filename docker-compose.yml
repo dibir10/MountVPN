@@ -24,6 +24,7 @@ services:
     networks:
       - app-network
 
+
   bot:
     build: .
     command: python3 bot.py
