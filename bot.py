@@ -1,12 +1,11 @@
 from aiogram import Bot, Dispatcher
 import asyncio
-from aiogram.fsm.storage.redis import RedisStorage, Redis
 from aiogram.fsm.storage.memory import MemoryStorage
 
-
-# import asyncpg, aiosqlite
 from VPNbot.engine import create_db, drop_db
-from VPNbot.handlers import handlers_router
+from VPNbot.handlers.user_handlers import user_handlers_router
+from VPNbot.handlers.admin_handlers import admin_handlers_router
+
 from VPNbot.config import settings
 from VPNbot.main_menu import set_main_menu
 from VPNbot.middlewares.db import DatabaseSession
@@ -28,7 +27,9 @@ async def main():
         print(f'Raised exception: {e}')
 
     dp.update.middleware(DatabaseSession(session_pool=session_maker))
-    dp.include_router(handlers_router)
+    dp.include_router(user_handlers_router)
+    dp.include_router(admin_handlers_router)
+
 
     # Кладем пул в диспетчер
     dp.startup.register(set_main_menu)
