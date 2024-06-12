@@ -1,16 +1,10 @@
-from aiogram import Bot, Router, F
-from aiogram.filters import BaseFilter, CommandStart, StateFilter
-from aiogram.filters.callback_data import CallbackData
-from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram import  Router, F
+from aiogram.filters import BaseFilter
+from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime, timedelta
 
-from VPNbot.lexicon.lexicon import LEXICON
 from VPNbot.config import settings
-from VPNbot.models import User_table
 from VPNbot.outline import client
-from VPNbot.states import FSMForm, FSMContext, default_state
 
 # Фильтр, который проверяет получение сообщения от админов
 class IsAdmin(BaseFilter):

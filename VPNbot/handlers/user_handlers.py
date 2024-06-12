@@ -6,7 +6,6 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 
-from VPNbot.lexicon.lexicon import LEXICON
 from VPNbot.config import settings
 from VPNbot.models import User_table
 from VPNbot.outline import client
@@ -38,7 +37,7 @@ def create_inline_kb(width: int,
     if args:
         for button in args:
             buttons.append(InlineKeyboardButton(
-                text=LEXICON[button] if button in LEXICON else button,
+                text=button,
                 callback_data=button))
     if kwargs:
         for button, text in kwargs.items():
